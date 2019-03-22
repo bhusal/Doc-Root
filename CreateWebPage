@@ -1,0 +1,61 @@
+Create a simple web page
+- The script will create simple web page.
+- host entry is added to /etc/hosts. Or use cname on DNS
+- Run script as # sh createweb.sh myserver.com
+
+
+[root@expanor2 ~]# cat createweb.sh
+#!/bin/bash
+# Kamal 
+# 
+# Specify the parameters
+domain_name=$1
+domain_root=/var/www/html/$domain_name
+myip=192.168.10.122
+port=80
+
+if [ $# -eq 0 ]
+then
+        echo "Please enter your domain name followed by script as command line parameter"
+        exit
+fi
+
+echo "<virtualhost $myip:$port>" > /etc/httpd/conf.d/$domain_name.conf
+echo "servername $domain_name" >> /etc/httpd/conf.d/$domain_name.conf
+echo "documentroot /var/www/html/$domain_name" >> /etc/httpd/conf.d/$domain_name.conf
+echo "directoryindex index.html" >> /etc/httpd/conf.d/$domain_name.conf
+echo "</virtualhost>" >> /etc/httpd/conf.d/$domain_name.conf
+echo
+
+#mkdir /var/www/html/$domain_name
+if [ ! -d "$domain_root" ]
+then
+        mkdir ${domain_root}
+fi
+
+#echo "Welcome to $domain_name" >/var/www/html/$domain_name/index.html
+echo "Welcome to $domain_name" > ${domain_root}/index.html
+
+echo "Now, checking httpd systax"
+httpd -t
+if [ $? -eq 0 ]
+then
+        systemctl restart httpd
+        echo "Your website $domain_name  is configured successfully"
+        echo $myip $domain_name >> /etc/hosts
+else
+        echo "Please check the config file for error"
+fi
+
+# firewall-cmd --list-all | grep http
+# if [ $? -ne 0 ]
+# then
+#
+#       firewall-cmd --permanent --add-service=http
+#       firewall-cmd --reload
+#fi
+
+# nothing needed for else statement
+
+# enf of the code
+
